@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grok Imagine Studio</title>
+  <style>
+    :root {
+      --bg: #09090c;
+      --bg-2: #111117;
+      --panel: rgba(18, 19, 28, 0.78);
+      --panel-strong: rgba(23, 25, 39, 0.94);
+      --line: rgba(255, 255, 255, 0.12);
+      --text: #f3f2eb;
+      --muted: #9a9aa7;
+      --cyan: #7ce7ff;
+      --cyan-2: #3bb6ff;
+      --amber: #ffcc7a;
+      --rose: #ff7f9f;
+      --good: #8af0b7;
+      --warn: #ffd37d;
+      --bad: #ff9c9c;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(124, 231, 255, 0.12), transparent 24%),
+        radial-gradient(circle at 82% 18%, rgba(255, 127, 159, 0.10), transparent 22%),
+        radial-gradient(circle at 70% 80%, rgba(255, 204, 122, 0.08), transparent 24%),
+        linear-gradient(180deg, #050508 0%, #0b0c10 45%, #09090c 100%);
+      color: var(--text);
+      font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(circle at center, black 45%, transparent 90%);
+      opacity: 0.45;
+    }
+
+    .shell {
+      width: min(1380px, calc(100vw - 32px));
+      margin: 24px auto 48px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 20px;
+    }
+
+    .hero-card, .meta-card, .panel {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)), var(--panel);
+      backdrop-filter: blur(18px);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 28px 30px 26px;
+      min-height: 220px;
+    }
+
+    .hero-card::after,
+    .meta-card::after,
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -60% auto;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124, 231, 255, 0.16), transparent 62%);
+      pointer-events: none;
+    }
+
+    .meta-card {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      justify-content: space-between;
+    }
+
+    .eyebrow,
+    .label {
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    h1 {
+      margin: 10px 0 14px;
+      font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+      font-size: clamp(40px, 6vw, 76px);
+      line-height: 0.96;
+      letter-spacing: -0.04em;
+      font-weight: 700;
+      max-width: 10ch;
+    }
+
+    .lead {
+      max-width: 62ch;
+      color: #d1d0d8;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .chip {
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 999px;
+      padding: 9px 14px;
+      color: #eceaf5;
+      background: rgba(255,255,255,0.04);
+      font-size: 13px;
+    }
+
+    .meta-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #e9e7f2;
+      font-size: 14px;
+    }
+
+    .deck {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .rail {
+      display: grid;
+      gap: 20px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .panel {
+      padding: 22px;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .panel-title {
+      font-family: "Iowan Old Style", "Palatino Linotype", serif;
+      font-size: 26px;
+      letter-spacing: -0.03em;
+      margin: 0;
+    }
+
+    .panel-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+      margin-top: 6px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .field:last-child { margin-bottom: 0; }
+
+    label {
+      font-size: 13px;
+      color: #e8e6ef;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(7, 9, 15, 0.76);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 14px 15px;
+      outline: none;
+      transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+      font: inherit;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: rgba(124, 231, 255, 0.7);
+      box-shadow: 0 0 0 4px rgba(124, 231, 255, 0.12);
+    }
+
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+      line-height: 1.65;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      color: var(--muted);
+      font: inherit;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .compact-textarea {
+      min-height: 96px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field-row.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .key-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .ghost-btn,
+    .primary-btn,
+    .tab-btn,
+    .mode-btn {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      font: inherit;
+      transition: transform 160ms ease, opacity 160ms ease, background 160ms ease, border-color 160ms ease;
+    }
+
+    .ghost-btn {
+      border-radius: 14px;
+      padding: 12px 14px;
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .ghost-btn:hover,
+    .primary-btn:hover,
+    .tab-btn:hover,
+    .mode-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary-btn {
+      border-radius: 18px;
+      padding: 14px 18px;
+      color: #061019;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--cyan) 0%, #cae9ff 48%, var(--amber) 100%);
+      box-shadow: 0 16px 40px rgba(124, 231, 255, 0.24);
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .tabs {
+      display: inline-flex;
+      gap: 8px;
+      padding: 8px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 18px;
+    }
+
+    .tab-btn {
+      padding: 11px 16px;
+      border-radius: 14px;
+      color: var(--muted);
+      background: transparent;
+    }
+
+    .tab-btn.active {
+      background: rgba(124, 231, 255, 0.12);
+      color: var(--text);
+      border: 1px solid rgba(124, 231, 255, 0.22);
+    }
+
+    .subtabs {
+      display: inline-flex;
+      gap: 8px;
+      padding: 7px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      margin-bottom: 18px;
+    }
+
+    .mode-btn {
+      padding: 10px 14px;
+      border-radius: 12px;
+      color: var(--muted);
+      background: transparent;
+    }
+
+    .mode-btn.active {
+      background: rgba(255, 204, 122, 0.12);
+      color: var(--text);
+      border: 1px solid rgba(255, 204, 122, 0.22);
+    }
+
+    .mode-panel { display: none; }
+    .mode-panel.active { display: grid; gap: 20px; }
+
+    .workspace {
+      display: grid;
+      gap: 20px;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: grid; gap: 20px; }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+    }
+
+    .status-pill.working { color: var(--warn); border-color: rgba(255, 211, 125, 0.25); }
+    .status-pill.success { color: var(--good); border-color: rgba(138, 240, 183, 0.25); }
+    .status-pill.error { color: var(--bad); border-color: rgba(255, 156, 156, 0.25); }
+
+    .status-pill::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 14px currentColor;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .result-card,
+    .placeholder,
+    .source-card,
+    .video-stage {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .placeholder {
+      min-height: 220px;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    .result-card img,
+    .source-card img,
+    .source-card video {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      display: block;
+      background: #050608;
+    }
+
+    .result-card .meta,
+    .video-stage .meta,
+    .source-card .meta {
+      padding: 12px 14px 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .meta-title {
+      font-weight: 600;
+      color: #eceaf6;
+    }
+
+    .meta-sub {
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--muted);
+      word-break: break-all;
+    }
+
+    .source-preview-wrap {
+      display: none;
+      margin-top: 8px;
+    }
+
+    .source-preview-wrap.visible {
+      display: block;
+    }
+
+    .source-card img,
+    .source-card video {
+      aspect-ratio: 4 / 3;
+    }
+
+    .mini-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .video-output video {
+      width: 100%;
+      max-height: 520px;
+      background: #050608;
+      display: block;
+    }
+
+    .video-stage {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .mono {
+      font-family: "SFMono-Regular", "Menlo", "Monaco", monospace;
+    }
+
+    .console {
+      min-height: 220px;
+      margin: 0;
+      padding: 18px;
+      white-space: pre-wrap;
+      line-height: 1.7;
+      color: #dddbe6;
+      background: rgba(4, 6, 12, 0.78);
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      overflow: auto;
+    }
+
+    .inline-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #ecedf4;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    @media (max-width: 1080px) {
+      .hero,
+      .deck {
+        grid-template-columns: 1fr;
+      }
+
+      .rail {
+        position: static;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(100vw - 18px, 100%);
+        margin: 10px auto 24px;
+      }
+
+      .hero-card,
+      .meta-card,
+      .panel {
+        border-radius: 22px;
+      }
+
+      .hero-card { padding: 22px; }
+      .meta-card,
+      .panel { padding: 18px; }
+
+      .field-row,
+      .field-row.three {
+        grid-template-columns: 1fr;
+      }
+
+      .key-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <article class="hero-card">
+        <div class="eyebrow">xAI image + video workstation</div>
+        <h1>Grok Imagine Studio</h1>
+        <p class="lead">
+          一个本地网页工作台：可管理多个 xAI API Key，并调用 <span class="mono">grok-imagine-image</span> 和
+          <span class="mono">grok-imagine-video</span> 做图片生成、图片编辑、文本视频生成、图生视频。
+        </p>
+        <div class="chips">
+          <span class="chip">图片: /v1/images/generations</span>
+          <span class="chip">图片编辑: /v1/images/edits</span>
+          <span class="chip">视频: /v1/videos/generations</span>
+          <span class="chip">视频扩展: /v1/videos/extensions</span>
+          <span class="chip">状态轮询: /v1/videos/{request_id}</span>
+        </div>
+      </article>
+
+      <aside class="meta-card">
+        <div>
+          <div class="eyebrow">Reference</div>
+          <div style="margin-top: 10px; font-size: 15px; line-height: 1.7; color: #d9d7e3;">
+            依据 xAI 官方文档实现，视频生成采用两阶段流程：先提交生成请求，再轮询 <span class="mono">request_id</span> 获取结果。
+          </div>
+        </div>
+        <div class="meta-grid">
+          <div class="meta-row"><span>图片模型</span><strong class="mono">grok-imagine-image</strong></div>
+          <div class="meta-row"><span>视频模型</span><strong class="mono">grok-imagine-video</strong></div>
+          <div class="meta-row"><span>部署方式</span><strong>本地 Python Server</strong></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="deck">
+      <aside class="rail">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="label">Security</div>
+              <h2 class="panel-title">API Keys</h2>
+            </div>
+            <span class="inline-badge">浏览器永久保存</span>
+          </div>
+          <div class="field">
+            <label for="saved-key-select">已保存 Key</label>
+            <select id="saved-key-select">
+              <option value="">还没有保存的 Key</option>
+            </select>
+            <div class="hint">保存在当前浏览器的 <span class="mono">localStorage</span> 中，刷新页面不会丢失。</div>
+          </div>
+          <div class="field">
+            <label for="api-key-label">Key 名称</label>
+            <input id="api-key-label" type="text" placeholder="例如：主 Key / 备用 Key A" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="api-key">Key 内容</label>
+            <div class="key-row">
+              <input id="api-key" type="password" placeholder="xai-..." autocomplete="off" />
+              <button id="toggle-key" class="ghost-btn" type="button">显示</button>
+            </div>
+            <div class="hint">选中已保存 Key 时会自动载入到这里；也可以直接编辑后新增或更新。</div>
+          </div>
+          <div class="field">
+            <div class="field-row">
+              <button id="save-key" class="ghost-btn" type="button">保存为新 Key</button>
+              <button id="update-key" class="ghost-btn" type="button">更新当前 Key</button>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-row">
+              <button id="delete-key" class="ghost-btn" type="button">删除当前</button>
+              <button id="clear-keys" class="ghost-btn" type="button">清空全部</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="bulk-keys">批量导入</label>
+            <textarea id="bulk-keys" class="compact-textarea" placeholder="每行一个 Key，或使用：主账号, xai-...\n备用账号, xai-..."></textarea>
+            <button id="import-keys" class="ghost-btn" type="button">批量导入</button>
+            <div class="hint">支持格式：<span class="mono">xai-...</span> 或 <span class="mono">名称, xai-...</span></div>
+          </div>
+          <div class="panel-note">
+            <span id="active-key-meta">当前未选择已保存 Key。</span><br />
+            为了避免浏览器直接暴露第三方接口，本页面通过本地服务代理 xAI 请求；你仍然需要自己提供有效的 xAI Key。
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="label">Model Controls</div>
+              <h2 class="panel-title">Quick Notes</h2>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="meta-row"><span>图片比例</span><strong>1:1 / 16:9 / auto ...</strong></div>
+            <div class="meta-row"><span>图片分辨率</span><strong>1k / 2k</strong></div>
+            <div class="meta-row"><span>视频时长</span><strong>1 - 15 秒</strong></div>
+            <div class="meta-row"><span>视频扩展</span><strong>2 - 10 秒</strong></div>
+            <div class="meta-row"><span>视频分辨率</span><strong>480p / 720p</strong></div>
+          </div>
+          <div class="panel-note">
+            视频结果是异步生成的，通常需要几十秒到几分钟；扩展输入视频建议使用 xAI 返回的 URL 或公网可访问的 MP4；图片支持 URL 返回，也支持 <span class="mono">b64_json</span>。
+          </div>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <section class="panel">
+          <div class="tabs" id="tabs">
+            <button class="tab-btn active" data-tab="image" type="button">图片模型</button>
+            <button class="tab-btn" data-tab="video" type="button">视频模型</button>
+          </div>
+
+          <div class="tab-panel active" id="tab-image">
+            <div class="panel-head">
+              <div>
+                <div class="label">Image</div>
+                <h2 class="panel-title">Text-to-Image / Image Edit</h2>
+                <div class="panel-note">不上传源图时走图片生成；上传 URL 或本地图片时走图片编辑。</div>
+              </div>
+              <span id="image-status" class="status-pill">等待输入</span>
+            </div>
+
+            <form id="image-form">
+              <div class="field">
+                <label for="image-prompt">提示词</label>
+                <textarea id="image-prompt" placeholder="例如：一座漂浮在海平线上的玻璃图书馆，日出时刻，电影级构图，空气中有微光尘埃。"></textarea>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="image-source-url">可选：源图 URL</label>
+                  <input id="image-source-url" type="text" placeholder="https://example.com/source.png" />
+                  <div class="hint">填了源图 URL 或上传文件后，将调用图片编辑接口。</div>
+                </div>
+                <div class="field">
+                  <label for="image-source-file">可选：上传源图</label>
+                  <input id="image-source-file" type="file" accept="image/*" />
+                  <div class="hint">浏览器会把图片转为 data URI，再发给本地代理服务。</div>
+                </div>
+              </div>
+
+              <div class="source-preview-wrap" id="image-source-preview-wrap">
+                <div class="source-card">
+                  <img id="image-source-preview" alt="图片源图预览" />
+                  <div class="meta">
+                    <div class="meta-title">当前源图</div>
+                    <div class="meta-sub" id="image-source-meta">未选择</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-row three">
+                <div class="field">
+                  <label for="image-aspect">长宽比</label>
+                  <select id="image-aspect">
+                    <option value="auto">auto</option>
+                    <option value="1:1">1:1</option>
+                    <option value="16:9">16:9</option>
+                    <option value="9:16">9:16</option>
+                    <option value="4:3">4:3</option>
+                    <option value="3:4">3:4</option>
+                    <option value="3:2">3:2</option>
+                    <option value="2:3">2:3</option>
+                    <option value="2:1">2:1</option>
+                    <option value="1:2">1:2</option>
+                    <option value="19.5:9">19.5:9</option>
+                    <option value="9:19.5">9:19.5</option>
+                    <option value="20:9">20:9</option>
+                    <option value="9:20">9:20</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="image-resolution">分辨率</label>
+                  <select id="image-resolution">
+                    <option value="1k">1k</option>
+                    <option value="2k">2k</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="image-count">生成数量</label>
+                  <select id="image-count">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="image-format">返回格式</label>
+                  <select id="image-format">
+                    <option value="">默认 URL</option>
+                    <option value="b64_json">b64_json</option>
+                  </select>
+                </div>
+                <div class="field" style="align-self:end;">
+                  <button class="primary-btn" type="submit">生成图片</button>
+                </div>
+              </div>
+            </form>
+
+            <div class="results-grid" id="image-results">
+              <div class="placeholder">结果会出现在这里。<br />支持多图返回，也支持 base64 结果直接展示。</div>
+            </div>
+          </div>
+
+          <div class="tab-panel" id="tab-video">
+            <div class="panel-head">
+              <div>
+                <div class="label">Video</div>
+                <h2 class="panel-title">Generate / Extend Video</h2>
+                <div class="panel-note">支持文生视频、图生视频，以及基于已有 MP4 的视频扩展；都会先提交请求，再轮询 request_id。</div>
+              </div>
+              <span id="video-status" class="status-pill">等待输入</span>
+            </div>
+
+            <div class="subtabs" id="video-mode-tabs">
+              <button class="mode-btn active" data-video-mode="generate" type="button">视频生成</button>
+              <button class="mode-btn" data-video-mode="extend" type="button">视频扩展</button>
+            </div>
+
+            <div class="mode-panel active" id="video-mode-generate">
+              <form id="video-generate-form">
+                <div class="field">
+                  <label for="video-prompt">提示词</label>
+                  <textarea id="video-prompt" placeholder="例如：镜头缓慢绕过一座赛博朋克塔楼，雨夜霓虹在玻璃幕墙上流动，体积雾，高细节，电影感镜头运动。"></textarea>
+                </div>
+
+                <div class="field-row">
+                  <div class="field">
+                    <label for="video-source-url">可选：起始图片 URL</label>
+                    <input id="video-source-url" type="text" placeholder="https://example.com/frame.png" />
+                    <div class="hint">填图或上传图时，将走图生视频模式。</div>
+                  </div>
+                  <div class="field">
+                    <label for="video-source-file">可选：上传起始图片</label>
+                    <input id="video-source-file" type="file" accept="image/*" />
+                    <div class="hint">支持公共 URL 或 data URI。</div>
+                  </div>
+                </div>
+
+                <div class="source-preview-wrap" id="video-source-preview-wrap">
+                  <div class="source-card">
+                    <img id="video-source-preview" alt="视频源图预览" />
+                    <div class="meta">
+                      <div class="meta-title">当前起始图片</div>
+                      <div class="meta-sub" id="video-source-meta">未选择</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="field-row three">
+                  <div class="field">
+                    <label for="video-duration">时长</label>
+                    <select id="video-duration">
+                      <option value="4">4 秒</option>
+                      <option value="5" selected>5 秒</option>
+                      <option value="6">6 秒</option>
+                      <option value="8">8 秒</option>
+                      <option value="10">10 秒</option>
+                      <option value="12">12 秒</option>
+                      <option value="15">15 秒</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="video-aspect">长宽比</label>
+                    <select id="video-aspect">
+                      <option value="16:9">16:9</option>
+                      <option value="9:16">9:16</option>
+                      <option value="1:1">1:1</option>
+                      <option value="4:3">4:3</option>
+                      <option value="3:4">3:4</option>
+                      <option value="3:2">3:2</option>
+                      <option value="2:3">2:3</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="video-resolution">分辨率</label>
+                    <select id="video-resolution">
+                      <option value="480p">480p</option>
+                      <option value="720p">720p</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button class="primary-btn" type="submit">生成视频</button>
+              </form>
+            </div>
+
+            <div class="mode-panel" id="video-mode-extend">
+              <form id="video-extend-form">
+                <div class="field">
+                  <label for="video-extend-prompt">扩展提示词</label>
+                  <textarea id="video-extend-prompt" placeholder="例如：延续同一镜头语言，人物继续向前走入雨幕，镜头轻微推进，霓虹反射更强。"></textarea>
+                  <div class="hint">这个提示词描述的是“新增的后续片段”。</div>
+                </div>
+
+                <div class="field">
+                  <label for="video-extend-source-url">待扩展视频 URL</label>
+                  <input id="video-extend-source-url" type="text" placeholder="https://.../video.mp4" />
+                  <div class="mini-actions">
+                    <button id="use-last-video" class="ghost-btn" type="button">直接使用上一个生成视频</button>
+                  </div>
+                  <div class="hint">依据 xAI 文档，扩展输入建议使用可访问的 <span class="mono">.mp4</span> URL；输入视频时长需在 2-15 秒内。生成完成后也可在结果卡片里一键直接扩展。</div>
+                </div>
+
+                <div class="source-preview-wrap" id="video-extend-preview-wrap">
+                  <div class="source-card">
+                    <video id="video-extend-preview" controls muted playsinline></video>
+                    <div class="meta">
+                      <div class="meta-title">待扩展视频预览</div>
+                      <div class="meta-sub" id="video-extend-meta">未选择</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field">
+                    <label for="video-extend-duration">扩展时长</label>
+                    <select id="video-extend-duration">
+                      <option value="2">2 秒</option>
+                      <option value="4">4 秒</option>
+                      <option value="6" selected>6 秒</option>
+                      <option value="8">8 秒</option>
+                      <option value="10">10 秒</option>
+                    </select>
+                    <div class="hint">扩展片段时长范围：2-10 秒。</div>
+                  </div>
+                  <div class="field">
+                    <label>最近输出视频</label>
+                    <div class="meta-row" style="min-height: 54px; align-items: center;">
+                      <span id="last-video-label">暂无</span>
+                      <strong class="mono" id="last-video-short">--</strong>
+                    </div>
+                    <div class="hint">扩展成功后会自动把最新视频 URL 记录在这里。</div>
+                  </div>
+                </div>
+
+                <button class="primary-btn" type="submit">扩展视频</button>
+              </form>
+            </div>
+
+            <div class="video-stage">
+              <div class="meta">
+                <div class="meta-title">生成状态</div>
+                <div class="meta-sub mono" id="video-request">request_id: 尚未提交</div>
+                <div class="meta-sub" id="video-detail">等待开始。</div>
+              </div>
+            </div>
+
+            <div class="video-output" id="video-output">
+              <div class="placeholder">视频生成或扩展完成后，这里会显示播放器和下载链接。</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="label">Console</div>
+              <h2 class="panel-title">Request Log</h2>
+            </div>
+            <button id="clear-log" class="ghost-btn" type="button">清空日志</button>
+          </div>
+          <pre class="console mono" id="console-log">[ready] 本地工作台已加载。</pre>
+          <p class="footer-note">
+            官方文档：
+            <a href="https://docs.x.ai/developers/model-capabilities/images/generation" target="_blank" rel="noreferrer">Image Generation</a>
+            /
+            <a href="https://docs.x.ai/developers/model-capabilities/video/generation" target="_blank" rel="noreferrer">Video Generation</a>
+            /
+            <a href="https://docs.x.ai/developers/model-capabilities/video/generation#extend-existing-videos" target="_blank" rel="noreferrer">Video Extension</a>
+          </p>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const KEYRING_STORAGE_KEY = "xai-demo-keyring-v2";
+    const LAST_VIDEO_URL_STORAGE_KEY = "xai-demo-last-video-url-v1";
+    const logEl = document.getElementById("console-log");
+    const keyLabelEl = document.getElementById("api-key-label");
+    const apiKeyEl = document.getElementById("api-key");
+    const toggleKeyBtn = document.getElementById("toggle-key");
+    const savedKeySelectEl = document.getElementById("saved-key-select");
+    const bulkKeysEl = document.getElementById("bulk-keys");
+    const activeKeyMetaEl = document.getElementById("active-key-meta");
+    const saveKeyBtn = document.getElementById("save-key");
+    const updateKeyBtn = document.getElementById("update-key");
+    const deleteKeyBtn = document.getElementById("delete-key");
+    const clearKeysBtn = document.getElementById("clear-keys");
+    const importKeysBtn = document.getElementById("import-keys");
+
+    const imageStatusEl = document.getElementById("image-status");
+    const videoStatusEl = document.getElementById("video-status");
+    const videoExtendSourceUrlEl = document.getElementById("video-extend-source-url");
+    const videoExtendPreviewWrapEl = document.getElementById("video-extend-preview-wrap");
+    const videoExtendPreviewEl = document.getElementById("video-extend-preview");
+    const videoExtendMetaEl = document.getElementById("video-extend-meta");
+    const useLastVideoBtn = document.getElementById("use-last-video");
+    const lastVideoLabelEl = document.getElementById("last-video-label");
+    const lastVideoShortEl = document.getElementById("last-video-short");
+    let keyring = { keys: [], activeId: "" };
+    let latestVideoUrl = "";
+
+    function nowTime() {
+      return new Date().toLocaleTimeString("zh-CN", { hour12: false });
+    }
+
+    function log(message) {
+      logEl.textContent = `[${nowTime()}] ${message}\n` + logEl.textContent;
+    }
+
+    function setStatus(el, text, tone = "") {
+      el.textContent = text;
+      el.className = "status-pill";
+      if (tone) el.classList.add(tone);
+    }
+
+    function getApiKey() {
+      const key = apiKeyEl.value.trim() || getActiveKeyEntry()?.key || "";
+      if (!key) throw new Error("请先输入 xAI API Key");
+      return key;
+    }
+
+    async function postJSON(url, payload) {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const text = await response.text();
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = { error: text || `HTTP ${response.status}` };
+      }
+
+      if (!response.ok) {
+        const message =
+          data.error ||
+          data.data?.error?.message ||
+          data.data?.error ||
+          text ||
+          `HTTP ${response.status}`;
+        throw new Error(message);
+      }
+
+      return data;
+    }
+
+    function shortenText(text, max = 34) {
+      if (!text) return "--";
+      return text.length > max ? `${text.slice(0, max - 3)}...` : text;
+    }
+
+    function updateLastVideoUI() {
+      if (latestVideoUrl) {
+        lastVideoLabelEl.textContent = "最近可用视频";
+        lastVideoShortEl.textContent = shortenText(latestVideoUrl, 28);
+        lastVideoShortEl.title = latestVideoUrl;
+        useLastVideoBtn.disabled = false;
+        useLastVideoBtn.style.opacity = "1";
+      } else {
+        lastVideoLabelEl.textContent = "暂无";
+        lastVideoShortEl.textContent = "--";
+        lastVideoShortEl.title = "";
+        useLastVideoBtn.disabled = true;
+        useLastVideoBtn.style.opacity = "0.5";
+      }
+    }
+
+    function saveLastVideoUrl(url) {
+      latestVideoUrl = (url || "").trim();
+      if (latestVideoUrl) {
+        localStorage.setItem(LAST_VIDEO_URL_STORAGE_KEY, latestVideoUrl);
+      } else {
+        localStorage.removeItem(LAST_VIDEO_URL_STORAGE_KEY);
+      }
+      updateLastVideoUI();
+    }
+
+    function loadLastVideoUrl() {
+      latestVideoUrl = (localStorage.getItem(LAST_VIDEO_URL_STORAGE_KEY) || "").trim();
+      updateLastVideoUI();
+    }
+
+    function createKeyId() {
+      return `key_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function maskKey(key) {
+      if (!key) return "未填写";
+      if (key.length <= 12) return `${key.slice(0, 4)}••••${key.slice(-2)}`;
+      return `${key.slice(0, 6)}••••••${key.slice(-4)}`;
+    }
+
+    function normalizeLabel(label, fallbackIndex = 1) {
+      return (label || "").trim() || `Key ${fallbackIndex}`;
+    }
+
+    function getActiveKeyEntry() {
+      return keyring.keys.find((item) => item.id === keyring.activeId) || null;
+    }
+
+    function saveKeyring() {
+      localStorage.setItem(KEYRING_STORAGE_KEY, JSON.stringify(keyring));
+    }
+
+    function renderKeyring() {
+      const previous = savedKeySelectEl.value;
+      savedKeySelectEl.innerHTML = "";
+
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = keyring.keys.length ? "请选择已保存 Key" : "还没有保存的 Key";
+      savedKeySelectEl.appendChild(placeholder);
+
+      keyring.keys.forEach((entry, index) => {
+        const option = document.createElement("option");
+        option.value = entry.id;
+        option.textContent = `${normalizeLabel(entry.label, index + 1)} · ${maskKey(entry.key)}`;
+        savedKeySelectEl.appendChild(option);
+      });
+
+      const active = getActiveKeyEntry();
+      if (active) {
+        savedKeySelectEl.value = active.id;
+        activeKeyMetaEl.innerHTML = `当前活跃：<span class="mono">${active.label}</span> · <span class="mono">${maskKey(active.key)}</span> · 共保存 ${keyring.keys.length} 个 Key。`;
+      } else if (keyring.keys.length) {
+        savedKeySelectEl.value = previous && keyring.keys.some((item) => item.id === previous) ? previous : "";
+        activeKeyMetaEl.textContent = `已保存 ${keyring.keys.length} 个 Key，请选择一个作为当前 Key。`;
+      } else {
+        savedKeySelectEl.value = "";
+        activeKeyMetaEl.textContent = "当前未选择已保存 Key。";
+      }
+    }
+
+    function loadKeyring() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(KEYRING_STORAGE_KEY) || "{}");
+        const keys = Array.isArray(raw.keys)
+          ? raw.keys
+              .map((item, index) => ({
+                id: typeof item.id === "string" && item.id ? item.id : createKeyId(),
+                label: normalizeLabel(String(item.label || ""), index + 1),
+                key: String(item.key || "").trim(),
+              }))
+              .filter((item) => item.key)
+          : [];
+
+        const activeId = typeof raw.activeId === "string" ? raw.activeId : "";
+        keyring = {
+          keys,
+          activeId: keys.some((item) => item.id === activeId) ? activeId : (keys[0]?.id || ""),
+        };
+      } catch {
+        keyring = { keys: [], activeId: "" };
+      }
+
+      renderKeyring();
+      if (getActiveKeyEntry()) {
+        loadActiveKeyIntoEditor();
+      }
+    }
+
+    function loadActiveKeyIntoEditor() {
+      const active = getActiveKeyEntry();
+      if (!active) return;
+      keyLabelEl.value = active.label;
+      apiKeyEl.value = active.key;
+    }
+
+    function readEditorKey() {
+      const key = apiKeyEl.value.trim();
+      if (!key) throw new Error("请先输入 API Key 内容");
+      return {
+        label: normalizeLabel(keyLabelEl.value, keyring.keys.length + 1),
+        key,
+      };
+    }
+
+    function activateKey(id, { syncEditor = true } = {}) {
+      keyring.activeId = id || "";
+      saveKeyring();
+      renderKeyring();
+      if (syncEditor && keyring.activeId) {
+        loadActiveKeyIntoEditor();
+      }
+    }
+
+    function addNewKey() {
+      const entry = readEditorKey();
+      const existing = keyring.keys.find((item) => item.key === entry.key);
+      if (existing) {
+        existing.label = entry.label;
+        keyring.activeId = existing.id;
+        saveKeyring();
+        renderKeyring();
+        loadActiveKeyIntoEditor();
+        log(`[keys] 已存在相同 Key，已切换到：${existing.label}`);
+        return;
+      }
+
+      const newEntry = { id: createKeyId(), ...entry };
+      keyring.keys.push(newEntry);
+      keyring.activeId = newEntry.id;
+      saveKeyring();
+      renderKeyring();
+      log(`[keys] 已保存新 Key：${newEntry.label}`);
+    }
+
+    function updateCurrentKey() {
+      const entry = readEditorKey();
+      const active = getActiveKeyEntry();
+      if (!active) {
+        addNewKey();
+        return;
+      }
+
+      active.label = entry.label;
+      active.key = entry.key;
+      saveKeyring();
+      renderKeyring();
+      log(`[keys] 已更新当前 Key：${active.label}`);
+    }
+
+    function deleteCurrentKey() {
+      const activeId = savedKeySelectEl.value || keyring.activeId;
+      if (!activeId) throw new Error("没有可删除的已保存 Key");
+      const active = keyring.keys.find((item) => item.id === activeId);
+      if (!active) throw new Error("当前 Key 不存在");
+      if (!window.confirm(`确认删除 Key「${active.label}」吗？`)) return;
+
+      keyring.keys = keyring.keys.filter((item) => item.id !== activeId);
+      keyring.activeId = keyring.keys[0]?.id || "";
+      saveKeyring();
+      renderKeyring();
+
+      if (getActiveKeyEntry()) {
+        loadActiveKeyIntoEditor();
+      } else {
+        keyLabelEl.value = "";
+        apiKeyEl.value = "";
+      }
+      log(`[keys] 已删除 Key：${active.label}`);
+    }
+
+    function clearAllKeys() {
+      if (!keyring.keys.length) return;
+      if (!window.confirm("确认清空所有已保存的 API Key 吗？")) return;
+      keyring = { keys: [], activeId: "" };
+      localStorage.removeItem(KEYRING_STORAGE_KEY);
+      renderKeyring();
+      keyLabelEl.value = "";
+      apiKeyEl.value = "";
+      log("[keys] 已清空全部已保存 Key");
+    }
+
+    function importBulkKeys() {
+      const raw = bulkKeysEl.value.trim();
+      if (!raw) throw new Error("请先输入要导入的 Key");
+
+      const lines = raw.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+      let added = 0;
+      let updated = 0;
+      let lastAddedId = "";
+
+      lines.forEach((line, index) => {
+        const commaIndex = line.indexOf(",");
+        let label = "";
+        let key = "";
+
+        if (commaIndex >= 0) {
+          label = line.slice(0, commaIndex).trim();
+          key = line.slice(commaIndex + 1).trim();
+        } else {
+          key = line;
+        }
+
+        if (!key) return;
+        const normalized = {
+          label: normalizeLabel(label, keyring.keys.length + added + index + 1),
+          key,
+        };
+
+        const existing = keyring.keys.find((item) => item.key === normalized.key);
+        if (existing) {
+          existing.label = normalized.label;
+          updated += 1;
+          return;
+        }
+
+        const newEntry = { id: createKeyId(), ...normalized };
+        keyring.keys.push(newEntry);
+        lastAddedId = newEntry.id;
+        added += 1;
+      });
+
+      if (!added && !updated) {
+        throw new Error("没有识别到可导入的 Key");
+      }
+
+      if (lastAddedId) {
+        keyring.activeId = lastAddedId;
+      } else if (!keyring.activeId && keyring.keys[0]) {
+        keyring.activeId = keyring.keys[0].id;
+      }
+
+      saveKeyring();
+      renderKeyring();
+      if (getActiveKeyEntry()) loadActiveKeyIntoEditor();
+      bulkKeysEl.value = "";
+      log(`[keys] 批量导入完成：新增 ${added} 个，更新 ${updated} 个`);
+    }
+
+    toggleKeyBtn.addEventListener("click", () => {
+      const hidden = apiKeyEl.type === "password";
+      apiKeyEl.type = hidden ? "text" : "password";
+      toggleKeyBtn.textContent = hidden ? "隐藏" : "显示";
+    });
+
+    document.getElementById("clear-log").addEventListener("click", () => {
+      logEl.textContent = "[ready] 日志已清空。";
+    });
+    savedKeySelectEl.addEventListener("change", () => {
+      activateKey(savedKeySelectEl.value);
+      if (savedKeySelectEl.value) {
+        log(`[keys] 已切换到：${getActiveKeyEntry()?.label || "未命名 Key"}`);
+      }
+    });
+    saveKeyBtn.addEventListener("click", () => {
+      try {
+        addNewKey();
+      } catch (error) {
+        log(`[keys] error: ${error.message}`);
+      }
+    });
+    updateKeyBtn.addEventListener("click", () => {
+      try {
+        updateCurrentKey();
+      } catch (error) {
+        log(`[keys] error: ${error.message}`);
+      }
+    });
+    deleteKeyBtn.addEventListener("click", () => {
+      try {
+        deleteCurrentKey();
+      } catch (error) {
+        log(`[keys] error: ${error.message}`);
+      }
+    });
+    clearKeysBtn.addEventListener("click", clearAllKeys);
+    importKeysBtn.addEventListener("click", () => {
+      try {
+        importBulkKeys();
+      } catch (error) {
+        log(`[keys] error: ${error.message}`);
+      }
+    });
+
+    loadKeyring();
+    loadLastVideoUrl();
+
+    function activateMainTab(tabName) {
+      document.querySelectorAll(".tab-btn").forEach((item) => {
+        item.classList.toggle("active", item.dataset.tab === tabName);
+      });
+      document.querySelectorAll(".tab-panel").forEach((item) => {
+        item.classList.toggle("active", item.id === `tab-${tabName}`);
+      });
+    }
+
+    function activateVideoMode(modeName) {
+      document.querySelectorAll("[data-video-mode]").forEach((item) => {
+        item.classList.toggle("active", item.dataset.videoMode === modeName);
+      });
+      document.querySelectorAll(".mode-panel").forEach((item) => {
+        item.classList.toggle("active", item.id === `video-mode-${modeName}`);
+      });
+    }
+
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activateMainTab(btn.dataset.tab);
+      });
+    });
+
+    document.querySelectorAll("[data-video-mode]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activateVideoMode(btn.dataset.videoMode);
+      });
+    });
+
+    async function fileToDataUrl(file) {
+      if (!file) return "";
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error("上传图片请控制在 10MB 内");
+      }
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("读取文件失败"));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function resolveSource(urlInputId, fileInputId) {
+      const url = document.getElementById(urlInputId).value.trim();
+      const file = document.getElementById(fileInputId).files[0];
+      if (file) return await fileToDataUrl(file);
+      return url;
+    }
+
+    function bindPreview(urlInputId, fileInputId, wrapId, imageId, metaId) {
+      const urlInput = document.getElementById(urlInputId);
+      const fileInput = document.getElementById(fileInputId);
+      const wrap = document.getElementById(wrapId);
+      const image = document.getElementById(imageId);
+      const meta = document.getElementById(metaId);
+
+      async function refresh() {
+        const file = fileInput.files[0];
+        const url = urlInput.value.trim();
+
+        if (file) {
+          const dataUri = await fileToDataUrl(file);
+          image.src = dataUri;
+          meta.textContent = `本地文件 · ${file.name}`;
+          wrap.classList.add("visible");
+          return;
+        }
+
+        if (url) {
+          image.src = url;
+          meta.textContent = `URL · ${url}`;
+          wrap.classList.add("visible");
+          return;
+        }
+
+        image.removeAttribute("src");
+        meta.textContent = "未选择";
+        wrap.classList.remove("visible");
+      }
+
+      urlInput.addEventListener("input", () => {
+        refresh().catch((err) => log(`[preview] ${err.message}`));
+      });
+
+      fileInput.addEventListener("change", () => {
+        refresh().catch((err) => log(`[preview] ${err.message}`));
+      });
+    }
+
+    bindPreview("image-source-url", "image-source-file", "image-source-preview-wrap", "image-source-preview", "image-source-meta");
+    bindPreview("video-source-url", "video-source-file", "video-source-preview-wrap", "video-source-preview", "video-source-meta");
+
+    function refreshVideoExtendPreview() {
+      const url = videoExtendSourceUrlEl.value.trim();
+      if (!url) {
+        videoExtendPreviewEl.removeAttribute("src");
+        videoExtendMetaEl.textContent = "未选择";
+        videoExtendPreviewWrapEl.classList.remove("visible");
+        return;
+      }
+
+      videoExtendPreviewEl.src = url;
+      videoExtendMetaEl.textContent = `URL · ${url}`;
+      videoExtendPreviewWrapEl.classList.add("visible");
+    }
+
+    function prepareVideoExtension(url, { focusPrompt = true } = {}) {
+      const normalizedUrl = (url || "").trim();
+      if (!normalizedUrl) {
+        log("[video-extension] 没有可用于扩展的视频 URL");
+        return;
+      }
+
+      activateMainTab("video");
+      activateVideoMode("extend");
+      videoExtendSourceUrlEl.value = normalizedUrl;
+      refreshVideoExtendPreview();
+
+      if (focusPrompt) {
+        document.getElementById("video-extend-prompt").focus();
+      }
+
+      document.getElementById("video-mode-extend").scrollIntoView({ behavior: "smooth", block: "start" });
+      log("[video-extension] 已将上一个生成视频带入扩展表单");
+    }
+
+    videoExtendSourceUrlEl.addEventListener("input", refreshVideoExtendPreview);
+    useLastVideoBtn.addEventListener("click", () => {
+      if (!latestVideoUrl) {
+        log("[video] 暂无最近输出视频可用于扩展");
+        return;
+      }
+      prepareVideoExtension(latestVideoUrl);
+    });
+    document.getElementById("video-output").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-action='extend-video']");
+      if (!button) return;
+      const encodedUrl = button.dataset.videoUrl || "";
+      const decodedUrl = encodedUrl ? decodeURIComponent(encodedUrl) : latestVideoUrl;
+      prepareVideoExtension(decodedUrl || latestVideoUrl);
+    });
+
+    function renderImageResults(payload, responseFormat) {
+      const container = document.getElementById("image-results");
+      const items = payload?.data || [];
+      if (!Array.isArray(items) || items.length === 0) {
+        container.innerHTML = `<div class="placeholder">接口已返回，但未解析到图片结果。</div>`;
+        return;
+      }
+
+      container.innerHTML = items.map((item, index) => {
+        const isBase64 = responseFormat === "b64_json" && item.b64_json;
+        const src = isBase64 ? `data:image/png;base64,${item.b64_json}` : item.url;
+        const downloadHref = src || "#";
+        const sub = isBase64
+          ? "已用 base64 直接渲染"
+          : (item.url || "无 URL");
+
+        return `
+          <article class="result-card">
+            <img src="${src || ""}" alt="生成结果 ${index + 1}" />
+            <div class="meta">
+              <div class="meta-title">结果 ${index + 1}</div>
+              <div class="meta-sub">${sub}</div>
+              <a class="ghost-btn" style="display:inline-flex;justify-content:center;" href="${downloadHref}" target="_blank" rel="noreferrer">打开结果</a>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function pollVideo(requestId, apiKey) {
+      const detailEl = document.getElementById("video-detail");
+      const requestEl = document.getElementById("video-request");
+
+      requestEl.textContent = `request_id: ${requestId}`;
+      let round = 0;
+
+      while (true) {
+        round += 1;
+        setStatus(videoStatusEl, `轮询中 #${round}`, "working");
+        detailEl.textContent = `正在查询视频状态，第 ${round} 次轮询…`;
+
+        const response = await postJSON("/api/video/status", {
+          api_key: apiKey,
+          request_id: requestId,
+        });
+
+        const data = response.data || {};
+        const status = data.status || "pending";
+        log(`[video] poll #${round}: ${status}`);
+
+        if (status === "done" && data.video?.url) {
+          setStatus(videoStatusEl, "视频完成", "success");
+          detailEl.textContent = `视频已完成，时长 ${data.video.duration ?? "?"} 秒。`;
+          saveLastVideoUrl(data.video.url);
+          document.getElementById("video-output").innerHTML = `
+            <div class="result-card">
+              <video controls src="${data.video.url}"></video>
+              <div class="meta">
+                <div class="meta-title">生成完成</div>
+                <div class="meta-sub mono">${data.video.url}</div>
+                <div class="mini-actions">
+                  <a class="ghost-btn" style="display:inline-flex;justify-content:center;" href="${data.video.url}" target="_blank" rel="noreferrer">打开 / 下载视频</a>
+                  <button class="ghost-btn" type="button" data-action="extend-video" data-video-url="${encodeURIComponent(data.video.url)}">直接扩展这个视频</button>
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        if (status === "failed") {
+          throw new Error("视频生成失败");
+        }
+
+        if (status === "expired") {
+          throw new Error("视频请求已过期");
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+      }
+    }
+
+    document.getElementById("image-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      try {
+        const apiKey = getApiKey();
+        const prompt = document.getElementById("image-prompt").value.trim();
+        if (!prompt) throw new Error("请输入图片提示词");
+
+        setStatus(imageStatusEl, "生成中", "working");
+        log("[image] submit generation request");
+
+        const sourceImage = await resolveSource("image-source-url", "image-source-file");
+        const responseFormat = document.getElementById("image-format").value;
+
+        const payload = {
+          api_key: apiKey,
+          prompt,
+          source_image: sourceImage,
+          aspect_ratio: document.getElementById("image-aspect").value,
+          resolution: document.getElementById("image-resolution").value,
+          n: Number(document.getElementById("image-count").value),
+          response_format: responseFormat,
+        };
+
+        const response = await postJSON("/api/image/generate", payload);
+        renderImageResults(response.data, responseFormat);
+        setStatus(imageStatusEl, "图片完成", "success");
+        log("[image] generation done");
+      } catch (error) {
+        setStatus(imageStatusEl, "生成失败", "error");
+        log(`[image] error: ${error.message}`);
+        document.getElementById("image-results").innerHTML = `<div class="placeholder">图片生成失败：<br />${error.message}</div>`;
+      }
+    });
+
+    document.getElementById("video-generate-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const output = document.getElementById("video-output");
+      const detailEl = document.getElementById("video-detail");
+      try {
+        const apiKey = getApiKey();
+        const prompt = document.getElementById("video-prompt").value.trim();
+        if (!prompt) throw new Error("请输入视频提示词");
+
+        setStatus(videoStatusEl, "提交中", "working");
+        detailEl.textContent = "正在提交视频生成请求…";
+        output.innerHTML = `<div class="placeholder">视频生成进行中，请等待状态轮询完成。</div>`;
+        log("[video] submit generation request");
+
+        const sourceImage = await resolveSource("video-source-url", "video-source-file");
+        const response = await postJSON("/api/video/generate", {
+          api_key: apiKey,
+          prompt,
+          source_image: sourceImage,
+          duration: Number(document.getElementById("video-duration").value),
+          aspect_ratio: document.getElementById("video-aspect").value,
+          resolution: document.getElementById("video-resolution").value,
+        });
+
+        const requestId = response.data?.request_id;
+        if (!requestId) {
+          throw new Error("接口未返回 request_id");
+        }
+
+        log(`[video] request accepted: ${requestId}`);
+        await pollVideo(requestId, apiKey);
+      } catch (error) {
+        setStatus(videoStatusEl, "生成失败", "error");
+        detailEl.textContent = `失败：${error.message}`;
+        output.innerHTML = `<div class="placeholder">视频生成失败：<br />${error.message}</div>`;
+        log(`[video] error: ${error.message}`);
+      }
+    });
+
+    document.getElementById("video-extend-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const output = document.getElementById("video-output");
+      const detailEl = document.getElementById("video-detail");
+      try {
+        const apiKey = getApiKey();
+        const prompt = document.getElementById("video-extend-prompt").value.trim();
+        const sourceVideo = videoExtendSourceUrlEl.value.trim();
+        if (!prompt) throw new Error("请输入视频扩展提示词");
+        if (!sourceVideo) throw new Error("请输入待扩展视频 URL");
+
+        setStatus(videoStatusEl, "扩展提交中", "working");
+        detailEl.textContent = "正在提交视频扩展请求…";
+        output.innerHTML = `<div class="placeholder">视频扩展进行中，请等待状态轮询完成。</div>`;
+        log("[video-extension] submit extension request");
+
+        const response = await postJSON("/api/video/extend", {
+          api_key: apiKey,
+          prompt,
+          source_video: sourceVideo,
+          duration: Number(document.getElementById("video-extend-duration").value),
+        });
+
+        const requestId = response.data?.request_id;
+        if (!requestId) {
+          throw new Error("接口未返回 request_id");
+        }
+
+        log(`[video-extension] request accepted: ${requestId}`);
+        await pollVideo(requestId, apiKey);
+      } catch (error) {
+        setStatus(videoStatusEl, "扩展失败", "error");
+        detailEl.textContent = `失败：${error.message}`;
+        output.innerHTML = `<div class="placeholder">视频扩展失败：<br />${error.message}</div>`;
+        log(`[video-extension] error: ${error.message}`);
+      }
+    });
+  </script>
+</body>
+</html>
