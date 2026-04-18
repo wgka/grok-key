@@ -5,6 +5,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+from typing import Optional
 
 
 ROOT = Path(__file__).resolve().parent
@@ -77,13 +78,13 @@ class AppHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
-    def _require_string(self, payload: dict, key: str, message: str | None = None) -> str:
+    def _require_string(self, payload: dict, key: str, message: Optional[str] = None) -> str:
         value = str(payload.get(key, "")).strip()
         if not value:
             raise ValueError(message or f"{key} 不能为空")
         return value
 
-    def _optional_string(self, payload: dict, key: str) -> str | None:
+    def _optional_string(self, payload: dict, key: str) -> Optional[str]:
         value = str(payload.get(key, "")).strip()
         return value or None
 
@@ -106,7 +107,7 @@ class AppHandler(BaseHTTPRequestHandler):
             raise ValueError(message)
         return value
 
-    def _proxy_xai(self, *, method: str, path: str, api_key: str, payload: dict | None = None):
+    def _proxy_xai(self, *, method: str, path: str, api_key: str, payload: Optional[dict] = None):
         body = None if payload is None else json_dumps(payload)
         request = Request(
             f"{XAI_API_BASE}{path}",
