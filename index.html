@@ -608,6 +608,103 @@
       aspect-ratio: 4 / 3;
     }
 
+    .multi-picker {
+      display: grid;
+      gap: 10px;
+    }
+
+    .multi-picker .key-row {
+      grid-template-columns: 1fr auto;
+    }
+
+    .multi-dropzone {
+      min-height: 104px;
+      padding: 14px;
+    }
+
+    .multi-dropzone.is-full {
+      opacity: 0.55;
+      cursor: not-allowed;
+      border-style: solid;
+    }
+
+    .multi-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+      gap: 10px;
+    }
+
+    .multi-list:empty {
+      display: none;
+    }
+
+    .multi-item {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(7, 9, 15, 0.7);
+      aspect-ratio: 1 / 1;
+    }
+
+    .multi-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      background: #050608;
+    }
+
+    .multi-item .multi-index {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: #061019;
+      background: rgba(124, 231, 255, 0.9);
+      box-shadow: 0 4px 12px rgba(124, 231, 255, 0.25);
+    }
+
+    .multi-item .multi-remove {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      background: rgba(10, 12, 18, 0.78);
+      color: #fff;
+      font-size: 14px;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      transition: background 160ms ease, transform 160ms ease;
+    }
+
+    .multi-item .multi-remove:hover {
+      background: rgba(255, 127, 159, 0.75);
+      transform: scale(1.05);
+    }
+
+    .multi-item .multi-kind {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 5px 8px;
+      font-size: 11px;
+      color: #ecedf4;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.65) 100%);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
     .mini-actions {
       display: flex;
       flex-wrap: wrap;
@@ -838,46 +935,29 @@
                 <textarea id="image-prompt" placeholder="例如：一座漂浮在海平线上的玻璃图书馆，日出时刻，电影级构图，空气中有微光尘埃。"></textarea>
               </div>
 
-              <div class="field-row">
-                <div class="field">
-                  <label for="image-source-url">可选：源图 URL</label>
-                  <input id="image-source-url" type="text" placeholder="https://example.com/source.png" />
-                  <div class="hint">填了源图 URL 或上传文件后，将调用图片编辑接口。</div>
-                </div>
-                <div class="field">
-                  <label for="image-source-file">可选：上传参考图</label>
-                  <div class="dropzone" id="image-source-dropzone" tabindex="0" role="button" aria-label="上传参考图，支持拖拽、点击或粘贴">
-                    <input id="image-source-file" type="file" accept="image/*" hidden />
+              <div class="field">
+                <label>参考图（可选，最多 5 张；可混用 URL 与上传图）</label>
+                <div class="multi-picker" data-multi-picker="image">
+                  <div class="key-row">
+                    <input class="multi-url-input" data-role="url-input" type="text" placeholder="粘贴图片 URL 后点「加入」；或直接 ⌘/Ctrl+V 粘贴图片" />
+                    <button class="ghost-btn" data-role="url-add" type="button">加入 URL</button>
+                  </div>
+                  <div class="dropzone multi-dropzone" data-role="dropzone" tabindex="0" role="button" aria-label="上传参考图，支持拖拽、点击或粘贴">
+                    <input class="multi-file-input" data-role="file-input" type="file" accept="image/*" multiple hidden />
                     <div class="dropzone-empty">
                       <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="17 8 12 3 7 8"></polyline>
                         <line x1="12" y1="3" x2="12" y2="15"></line>
                       </svg>
-                      <div class="dropzone-title">拖拽参考图到这里</div>
-                      <div class="dropzone-sub">或点击选择 · 粘贴 <span class="mono">⌘ / Ctrl + V</span></div>
-                    </div>
-                    <div class="dropzone-filled" hidden>
-                      <img class="dropzone-thumb" alt="参考图缩略图" />
-                      <div class="dropzone-info">
-                        <div class="dropzone-filename"></div>
-                        <div class="dropzone-fileinfo"></div>
-                      </div>
-                      <button class="dropzone-clear ghost-btn" type="button">清除</button>
+                      <div class="dropzone-title">拖拽 / 点击 / 粘贴 添加参考图</div>
+                      <div class="dropzone-sub">支持一次选多张 · <span class="mono">⌘ / Ctrl + V</span> 粘贴</div>
                     </div>
                   </div>
-                  <div class="hint">支持 PNG / JPG / WebP，上限 10 MB，浏览器会转为 data URI 发送。</div>
+                  <div class="multi-list" data-role="list"></div>
+                  <div class="hint" data-role="hint">尚未添加参考图。</div>
                 </div>
-              </div>
-
-              <div class="source-preview-wrap" id="image-source-preview-wrap">
-                <div class="source-card">
-                  <img id="image-source-preview" alt="图片源图预览" />
-                  <div class="meta">
-                    <div class="meta-title">当前源图</div>
-                    <div class="meta-sub" id="image-source-meta">未选择</div>
-                  </div>
-                </div>
+                <div class="hint">上限 10 MB/张，最多 5 张；仅 1 张走 <span class="mono">image</span> 字段，≥2 张走 <span class="mono">images</span> 多图编辑。</div>
               </div>
 
               <div class="field-row three">
@@ -949,6 +1029,7 @@
 
             <div class="subtabs" id="video-mode-tabs">
               <button class="mode-btn active" data-video-mode="generate" type="button">视频生成</button>
+              <button class="mode-btn" data-video-mode="reference" type="button">参考图生视频</button>
               <button class="mode-btn" data-video-mode="extend" type="button">视频扩展</button>
             </div>
 
@@ -1036,6 +1117,77 @@
                 </div>
 
                 <button class="primary-btn" type="submit">生成视频</button>
+              </form>
+            </div>
+
+            <div class="mode-panel" id="video-mode-reference">
+              <form id="video-reference-form">
+                <div class="field">
+                  <label for="video-reference-prompt">提示词</label>
+                  <textarea id="video-reference-prompt" placeholder="例如：模特穿着 IMAGE_2 的上衣，走在 IMAGE_1 的白色 T 台上，镜头缓慢推进。"></textarea>
+                  <div class="hint">可以在提示词里用 <span class="mono">&lt;IMAGE_1&gt;</span>、<span class="mono">&lt;IMAGE_2&gt;</span> 等引用不同参考图，xAI 会按列表顺序绑定。</div>
+                </div>
+
+                <div class="field">
+                  <label>参考图（最多 5 张；与「视频生成」首帧模式互斥）</label>
+                  <div class="hint" style="margin-bottom:6px;">本地图会在浏览器里先压到长边 1280px / 单张 ≤ 2 MB 再上传；若遇到 SSL 连接中断，改填 <span class="mono">公网图片 URL</span> 更稳。</div>
+                  <div class="multi-picker" data-multi-picker="video-reference">
+                    <div class="key-row">
+                      <input class="multi-url-input" data-role="url-input" type="text" placeholder="粘贴图片 URL 后点「加入」；或直接 ⌘/Ctrl+V 粘贴图片" />
+                      <button class="ghost-btn" data-role="url-add" type="button">加入 URL</button>
+                    </div>
+                    <div class="dropzone multi-dropzone" data-role="dropzone" tabindex="0" role="button" aria-label="上传参考图，支持拖拽、点击或粘贴">
+                      <input class="multi-file-input" data-role="file-input" type="file" accept="image/*" multiple hidden />
+                      <div class="dropzone-empty">
+                        <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                          <polyline points="17 8 12 3 7 8"></polyline>
+                          <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <div class="dropzone-title">拖拽 / 点击 / 粘贴 添加参考图</div>
+                        <div class="dropzone-sub">支持一次选多张 · <span class="mono">⌘ / Ctrl + V</span> 粘贴</div>
+                      </div>
+                    </div>
+                    <div class="multi-list" data-role="list"></div>
+                    <div class="hint" data-role="hint">尚未添加参考图。</div>
+                  </div>
+                </div>
+
+                <div class="field-row three">
+                  <div class="field">
+                    <label for="video-reference-duration">时长</label>
+                    <select id="video-reference-duration">
+                      <option value="4">4 秒</option>
+                      <option value="5" selected>5 秒</option>
+                      <option value="6">6 秒</option>
+                      <option value="8">8 秒</option>
+                      <option value="10">10 秒</option>
+                      <option value="12">12 秒</option>
+                      <option value="15">15 秒</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="video-reference-aspect">长宽比</label>
+                    <select id="video-reference-aspect">
+                      <option value="16:9">16:9</option>
+                      <option value="9:16">9:16</option>
+                      <option value="1:1">1:1</option>
+                      <option value="4:3">4:3</option>
+                      <option value="3:4">3:4</option>
+                      <option value="3:2">3:2</option>
+                      <option value="2:3">2:3</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="video-reference-resolution">分辨率</label>
+                    <select id="video-reference-resolution">
+                      <option value="480p">480p</option>
+                      <option value="720p" selected>720p</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button class="primary-btn" type="submit">用参考图生成视频</button>
               </form>
             </div>
 
@@ -1548,6 +1700,8 @@
     });
 
     const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+    const COMPRESS_MAX_EDGE = 1280;
+    const COMPRESS_TARGET_BYTES = 2 * 1024 * 1024;
 
     async function fileToDataUrl(file) {
       if (!file) return "";
@@ -1562,10 +1716,78 @@
       });
     }
 
-    async function resolveSource(urlInputId, fileInputId) {
+    function dataUriByteSize(dataUri) {
+      if (!dataUri || typeof dataUri !== "string") return 0;
+      const comma = dataUri.indexOf(",");
+      if (comma < 0) return 0;
+      const body = dataUri.length - comma - 1;
+      return Math.floor(body * 3 / 4);
+    }
+
+    async function compressImageFile(file, { maxEdge = COMPRESS_MAX_EDGE, targetBytes = COMPRESS_TARGET_BYTES, minQuality = 0.5 } = {}) {
+      if (!file) return { dataUri: "", compressed: false, originalBytes: 0, outputBytes: 0 };
+      if (file.size > MAX_UPLOAD_BYTES) {
+        throw new Error("上传图片请控制在 10MB 内");
+      }
+
+      const originalDataUri = await fileToDataUrl(file);
+      const originalBytes = file.size;
+
+      if (file.size <= targetBytes && /^image\/(jpeg|jpg|webp)$/i.test(file.type)) {
+        return { dataUri: originalDataUri, compressed: false, originalBytes, outputBytes: originalBytes };
+      }
+
+      const img = await new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error("读取图片失败"));
+        image.src = originalDataUri;
+      });
+
+      const longestEdge = Math.max(img.width, img.height);
+      const scale = longestEdge > maxEdge ? maxEdge / longestEdge : 1;
+      const outW = Math.max(1, Math.round(img.width * scale));
+      const outH = Math.max(1, Math.round(img.height * scale));
+
+      const canvas = document.createElement("canvas");
+      canvas.width = outW;
+      canvas.height = outH;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, outW, outH);
+      ctx.drawImage(img, 0, 0, outW, outH);
+
+      let quality = 0.9;
+      let dataUri = canvas.toDataURL("image/jpeg", quality);
+      let outputBytes = dataUriByteSize(dataUri);
+
+      while (outputBytes > targetBytes && quality > minQuality) {
+        quality = Math.max(minQuality, quality - 0.1);
+        dataUri = canvas.toDataURL("image/jpeg", quality);
+        outputBytes = dataUriByteSize(dataUri);
+      }
+
+      return {
+        dataUri,
+        compressed: true,
+        originalBytes,
+        outputBytes,
+        width: outW,
+        height: outH,
+        quality,
+      };
+    }
+
+    async function resolveSource(urlInputId, fileInputId, logTag = "upload") {
       const url = document.getElementById(urlInputId).value.trim();
       const file = document.getElementById(fileInputId).files[0];
-      if (file) return await fileToDataUrl(file);
+      if (file) {
+        const result = await compressImageFile(file);
+        if (result.compressed) {
+          log(`[${logTag}] 已自动压缩：${formatFileSize(result.originalBytes)} → ${formatFileSize(result.outputBytes)}${result.width ? `，${result.width}×${result.height}` : ""}`);
+        }
+        return result.dataUri;
+      }
       return url;
     }
 
@@ -1808,13 +2030,253 @@
       renderEmpty();
     }
 
-    bindDropzone({
-      dropzoneId: "image-source-dropzone",
-      urlInputId: "image-source-url",
-      fileInputId: "image-source-file",
-      wrapId: "image-source-preview-wrap",
-      imageId: "image-source-preview",
-      metaId: "image-source-meta",
+    function bindMultiImagePicker({ rootSelector, maxItems = 5, logTag = "multi", onChange = null }) {
+      const root = document.querySelector(rootSelector);
+      if (!root) return null;
+
+      const urlInput = root.querySelector('[data-role="url-input"]');
+      const urlAdd = root.querySelector('[data-role="url-add"]');
+      const dropzone = root.querySelector('[data-role="dropzone"]');
+      const fileInput = root.querySelector('[data-role="file-input"]');
+      const listEl = root.querySelector('[data-role="list"]');
+      const hintEl = root.querySelector('[data-role="hint"]');
+      if (!dropzone || !fileInput || !listEl) return null;
+
+      const items = [];
+
+      function render() {
+        listEl.innerHTML = items.map((item, idx) => {
+          const label = item.kind === "file" ? "Upload" : "URL";
+          return `
+            <div class="multi-item" data-index="${idx}">
+              <img src="${item.thumb}" alt="参考图 ${idx + 1}" />
+              <span class="multi-index">#${idx + 1}</span>
+              <button type="button" class="multi-remove" aria-label="移除参考图 ${idx + 1}">×</button>
+              <div class="multi-kind">${label}</div>
+            </div>
+          `;
+        }).join("");
+
+        if (hintEl) {
+          hintEl.textContent = items.length === 0
+            ? "尚未添加参考图。"
+            : `已添加 ${items.length} / ${maxItems} 张。`;
+        }
+
+        dropzone.classList.toggle("is-full", items.length >= maxItems);
+
+        if (typeof onChange === "function") {
+          try { onChange(items.length); } catch (_) { /* noop */ }
+        }
+      }
+
+      function warnFull() {
+        log(`[${logTag}] 已达上限：${maxItems} 张`);
+      }
+
+      async function addFile(file) {
+        if (items.length >= maxItems) { warnFull(); return; }
+        if (!file || !file.type.startsWith("image/")) {
+          log(`[${logTag}] 仅支持图片文件`);
+          return;
+        }
+        if (file.size > MAX_UPLOAD_BYTES) {
+          log(`[${logTag}] 文件过大（${formatFileSize(file.size)}），上限 10 MB`);
+          return;
+        }
+        try {
+          const result = await compressImageFile(file);
+          if (result.compressed) {
+            log(`[${logTag}] 已自动压缩：${formatFileSize(result.originalBytes)} → ${formatFileSize(result.outputBytes)}${result.width ? `，${result.width}×${result.height}` : ""}`);
+          }
+          items.push({ kind: "file", src: result.dataUri, thumb: result.dataUri, name: file.name || "" });
+          render();
+        } catch (err) {
+          log(`[${logTag}] ${err.message}`);
+        }
+      }
+
+      function addUrl(raw) {
+        if (items.length >= maxItems) { warnFull(); return; }
+        const url = (raw || "").trim();
+        if (!url) return;
+        items.push({ kind: "url", src: url, thumb: url });
+        render();
+      }
+
+      dropzone.addEventListener("click", (event) => {
+        if (event.target.closest(".multi-remove")) return;
+        if (items.length >= maxItems) { warnFull(); return; }
+        fileInput.click();
+      });
+
+      dropzone.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        if (items.length >= maxItems) { warnFull(); return; }
+        event.preventDefault();
+        fileInput.click();
+      });
+
+      dropzone.addEventListener("dragenter", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (items.length >= maxItems) return;
+        dropzone.classList.add("is-dragover");
+      });
+
+      dropzone.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (items.length >= maxItems) {
+          if (event.dataTransfer) event.dataTransfer.dropEffect = "none";
+          return;
+        }
+        if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+        dropzone.classList.add("is-dragover");
+      });
+
+      dropzone.addEventListener("dragleave", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (!dropzone.contains(event.relatedTarget)) {
+          dropzone.classList.remove("is-dragover");
+        }
+      });
+
+      dropzone.addEventListener("drop", async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        dropzone.classList.remove("is-dragover");
+        const files = Array.from(event.dataTransfer?.files || []).filter((f) => f.type.startsWith("image/"));
+        if (!files.length) {
+          log(`[${logTag}] 仅支持图片文件`);
+          return;
+        }
+        for (const file of files) {
+          if (items.length >= maxItems) { warnFull(); break; }
+          await addFile(file);
+        }
+      });
+
+      root.addEventListener("paste", async (event) => {
+        const pasted = event.clipboardData?.items || [];
+        let handledImage = false;
+        for (const item of pasted) {
+          if (item.kind === "file" && item.type.startsWith("image/")) {
+            const file = item.getAsFile();
+            if (!file) continue;
+            if (!handledImage) {
+              event.preventDefault();
+              handledImage = true;
+            }
+            if (items.length >= maxItems) { warnFull(); break; }
+            await addFile(file);
+          }
+        }
+      });
+
+      fileInput.addEventListener("change", async () => {
+        const files = Array.from(fileInput.files || []);
+        for (const file of files) {
+          if (items.length >= maxItems) { warnFull(); break; }
+          await addFile(file);
+        }
+        fileInput.value = "";
+      });
+
+      if (urlAdd && urlInput) {
+        const submitUrl = () => {
+          const value = urlInput.value;
+          addUrl(value);
+          urlInput.value = "";
+        };
+        urlAdd.addEventListener("click", submitUrl);
+        urlInput.addEventListener("keydown", (event) => {
+          if (event.key !== "Enter") return;
+          event.preventDefault();
+          submitUrl();
+        });
+      }
+
+      listEl.addEventListener("click", (event) => {
+        const btn = event.target.closest(".multi-remove");
+        if (!btn) return;
+        const parent = btn.closest(".multi-item");
+        if (!parent) return;
+        const idx = Number(parent.dataset.index);
+        if (Number.isInteger(idx) && idx >= 0 && idx < items.length) {
+          items.splice(idx, 1);
+          render();
+        }
+      });
+
+      render();
+
+      return {
+        getSources: () => items.map((item) => item.src),
+        count: () => items.length,
+        clear: () => { items.length = 0; render(); },
+      };
+    }
+
+    const imageCountSelect = document.getElementById("image-count");
+    const imageCountField = imageCountSelect ? imageCountSelect.closest(".field") : null;
+    let imageCountHintEl = null;
+    let imageCountLastValue = imageCountSelect ? imageCountSelect.value : "1";
+    if (imageCountField) {
+      imageCountHintEl = document.createElement("div");
+      imageCountHintEl.className = "hint";
+      imageCountHintEl.style.minHeight = "1em";
+      imageCountHintEl.textContent = "文生图模式下支持 1-4 张批量。";
+      imageCountField.appendChild(imageCountHintEl);
+    }
+
+    function syncImageCountForEditMode(refCount) {
+      if (!imageCountSelect) return;
+      const editing = refCount > 0;
+      if (editing) {
+        if (!imageCountSelect.disabled) {
+          imageCountLastValue = imageCountSelect.value;
+        }
+        imageCountSelect.value = "1";
+        imageCountSelect.disabled = true;
+        imageCountSelect.style.opacity = "0.5";
+        if (imageCountHintEl) {
+          imageCountHintEl.textContent = "图片编辑模式仅生成 1 张（xAI /images/edits 不支持 n）。";
+          imageCountHintEl.style.color = "var(--warn)";
+        }
+      } else {
+        if (imageCountSelect.disabled) {
+          imageCountSelect.value = imageCountLastValue || "1";
+        }
+        imageCountSelect.disabled = false;
+        imageCountSelect.style.opacity = "";
+        if (imageCountHintEl) {
+          imageCountHintEl.textContent = "文生图模式下支持 1-4 张批量。";
+          imageCountHintEl.style.color = "";
+        }
+      }
+    }
+    if (imageCountSelect) {
+      imageCountSelect.addEventListener("change", () => {
+        if (!imageCountSelect.disabled) {
+          imageCountLastValue = imageCountSelect.value;
+        }
+      });
+    }
+
+    const imageSourcePicker = bindMultiImagePicker({
+      rootSelector: '[data-multi-picker="image"]',
+      maxItems: 5,
+      logTag: "image-source",
+      onChange: syncImageCountForEditMode,
+    });
+    syncImageCountForEditMode(0);
+
+    const videoReferencePicker = bindMultiImagePicker({
+      rootSelector: '[data-multi-picker="video-reference"]',
+      maxItems: 5,
+      logTag: "video-reference",
     });
 
     bindDropzone({
@@ -1966,15 +2428,15 @@
         if (!prompt) throw new Error("请输入图片提示词");
 
         setStatus(imageStatusEl, "生成中", "working");
-        log("[image] submit generation request");
+        const sourceImages = imageSourcePicker ? imageSourcePicker.getSources() : [];
+        log(`[image] submit generation request (refs=${sourceImages.length})`);
 
-        const sourceImage = await resolveSource("image-source-url", "image-source-file");
         const responseFormat = document.getElementById("image-format").value;
 
         const payload = {
           api_key: apiKey,
           prompt,
-          source_image: sourceImage,
+          source_images: sourceImages,
           aspect_ratio: document.getElementById("image-aspect").value,
           resolution: document.getElementById("image-resolution").value,
           n: Number(document.getElementById("image-count").value),
@@ -2006,7 +2468,7 @@
         output.innerHTML = `<div class="placeholder">视频生成进行中，请等待状态轮询完成。</div>`;
         log("[video] submit generation request");
 
-        const sourceImage = await resolveSource("video-source-url", "video-source-file");
+        const sourceImage = await resolveSource("video-source-url", "video-source-file", "video");
         const response = await postJSON("/api/video/generate", {
           api_key: apiKey,
           prompt,
@@ -2028,6 +2490,47 @@
         detailEl.textContent = `失败：${error.message}`;
         output.innerHTML = `<div class="placeholder">视频生成失败：<br />${error.message}</div>`;
         log(`[video] error: ${error.message}`);
+      }
+    });
+
+    document.getElementById("video-reference-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const output = document.getElementById("video-output");
+      const detailEl = document.getElementById("video-detail");
+      try {
+        const apiKey = getApiKey();
+        const prompt = document.getElementById("video-reference-prompt").value.trim();
+        if (!prompt) throw new Error("请输入视频提示词");
+
+        const references = videoReferencePicker ? videoReferencePicker.getSources() : [];
+        if (!references.length) throw new Error("请至少添加一张参考图（最多 5 张）");
+
+        setStatus(videoStatusEl, "提交中", "working");
+        detailEl.textContent = `正在提交参考图生视频请求（${references.length} 张参考图）…`;
+        output.innerHTML = `<div class="placeholder">视频生成进行中，请等待状态轮询完成。</div>`;
+        log(`[video-reference] submit with ${references.length} reference image(s)`);
+
+        const response = await postJSON("/api/video/generate", {
+          api_key: apiKey,
+          prompt,
+          reference_images: references,
+          duration: Number(document.getElementById("video-reference-duration").value),
+          aspect_ratio: document.getElementById("video-reference-aspect").value,
+          resolution: document.getElementById("video-reference-resolution").value,
+        });
+
+        const requestId = response.data?.request_id;
+        if (!requestId) {
+          throw new Error("接口未返回 request_id");
+        }
+
+        log(`[video-reference] request accepted: ${requestId}`);
+        await pollVideo(requestId, apiKey);
+      } catch (error) {
+        setStatus(videoStatusEl, "生成失败", "error");
+        detailEl.textContent = `失败：${error.message}`;
+        output.innerHTML = `<div class="placeholder">参考图生视频失败：<br />${error.message}</div>`;
+        log(`[video-reference] error: ${error.message}`);
       }
     });
 

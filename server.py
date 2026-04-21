@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import ssl
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -11,6 +12,7 @@ from typing import Optional
 ROOT = Path(__file__).resolve().parent
 INDEX_HTML = ROOT / "index.html"
 XAI_API_BASE = "https://api.x.ai/v1"
+MAX_UPSTREAM_BODY_BYTES = 24 * 1024 * 1024
 
 
 def json_dumps(payload: dict) -> bytes:
@@ -88,6 +90,30 @@ class AppHandler(BaseHTTPRequestHandler):
         value = str(payload.get(key, "")).strip()
         return value or None
 
+    def _optional_string_list(
+        self,
+        payload: dict,
+        key: str,
+        *,
+        max_items: int,
+        message: str,
+    ) -> list:
+        raw = payload.get(key)
+        if raw is None:
+            return []
+        if not isinstance(raw, list):
+            raise ValueError(message)
+        cleaned: list = []
+        for item in raw:
+            if item is None:
+                continue
+            text = str(item).strip()
+            if text:
+                cleaned.append(text)
+        if len(cleaned) > max_items:
+            raise ValueError(message)
+        return cleaned
+
     def _parse_int_range(
         self,
         payload: dict,
@@ -109,6 +135,17 @@ class AppHandler(BaseHTTPRequestHandler):
 
     def _proxy_xai(self, *, method: str, path: str, api_key: str, payload: Optional[dict] = None):
         body = None if payload is None else json_dumps(payload)
+        body_size = len(body) if body else 0
+
+        if body_size > MAX_UPSTREAM_BODY_BYTES:
+            mb = body_size / (1024 * 1024)
+            return 413, {
+                "error": (
+                    f"请求体过大（约 {mb:.1f} MB，超过 {MAX_UPSTREAM_BODY_BYTES // (1024*1024)} MB 上限）。"
+                    f"多张本地图会被转成 base64，体积会放大；建议：改用公网图片 URL，或先压缩图片后再上传。"
+                )
+            }
+
         request = Request(
             f"{XAI_API_BASE}{path}",
             method=method,
@@ -135,14 +172,32 @@ class AppHandler(BaseHTTPRequestHandler):
                 data = {"error": raw or exc.reason}
             return exc.code, data
         except URLError as exc:
-            return 502, {"error": f"请求 xAI API 失败: {exc.reason}"}
+            reason = exc.reason
+            if isinstance(reason, ssl.SSLError) or "SSL" in str(reason).upper():
+                hint = (
+                    f"与 xAI 的 TLS 连接被意外断开（{reason}）。"
+                    f"常见原因：请求体过大（本次约 {body_size / (1024 * 1024):.1f} MB）、"
+                    f"网络不稳定，或上游临时拒绝。建议：改用公网 URL 传图，或压缩后再试。"
+                )
+                return 502, {"error": hint}
+            return 502, {"error": f"请求 xAI API 失败: {reason}"}
 
     def _handle_image_generation(self):
         try:
             payload = self._read_json()
             api_key = self._require_string(payload, "api_key", "请输入 xAI API Key")
             prompt = self._require_string(payload, "prompt", "图片提示词不能为空")
-            source_image = self._optional_string(payload, "source_image")
+
+            source_images = self._optional_string_list(
+                payload,
+                "source_images",
+                max_items=5,
+                message="source_images 最多 5 张",
+            )
+            if not source_images:
+                legacy_single = self._optional_string(payload, "source_image")
+                if legacy_single:
+                    source_images = [legacy_single]
 
             upstream_body = {
                 "model": "grok-imagine-image",
@@ -158,12 +213,20 @@ class AppHandler(BaseHTTPRequestHandler):
             if response_format:
                 upstream_body["response_format"] = response_format
 
-            if source_image:
+            if source_images:
                 upstream_path = "/images/edits"
-                upstream_body["image"] = {
-                    "url": source_image,
-                    "type": "image_url",
-                }
+                if aspect_ratio:
+                    upstream_body["aspect_ratio"] = aspect_ratio
+                if len(source_images) == 1:
+                    upstream_body["image"] = {
+                        "url": source_images[0],
+                        "type": "image_url",
+                    }
+                else:
+                    upstream_body["images"] = [
+                        {"url": url, "type": "image_url"}
+                        for url in source_images
+                    ]
             else:
                 upstream_path = "/images/generations"
                 if aspect_ratio:
@@ -191,6 +254,17 @@ class AppHandler(BaseHTTPRequestHandler):
             api_key = self._require_string(payload, "api_key", "请输入 xAI API Key")
             prompt = self._require_string(payload, "prompt", "视频提示词不能为空")
             source_image = self._optional_string(payload, "source_image")
+            reference_images = self._optional_string_list(
+                payload,
+                "reference_images",
+                max_items=5,
+                message="reference_images 最多 5 张",
+            )
+
+            if source_image and reference_images:
+                raise ValueError(
+                    "起始图（image）与参考图（reference_images）互斥，请只选一种"
+                )
 
             duration = self._parse_int_range(
                 payload,
@@ -216,6 +290,10 @@ class AppHandler(BaseHTTPRequestHandler):
                 upstream_body["resolution"] = resolution
             if source_image:
                 upstream_body["image"] = {"url": source_image}
+            elif reference_images:
+                upstream_body["reference_images"] = [
+                    {"url": url} for url in reference_images
+                ]
 
             status, data = self._proxy_xai(
                 method="POST",

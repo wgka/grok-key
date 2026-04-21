@@ -9,8 +9,10 @@
 
 - 文生图
 - 图片编辑（上传图片或填源图 URL）
+- 多图编辑（最多 5 张参考图，自动走 `/v1/images/edits` 的 `images[]`）
 - 文生视频
-- 图生视频
+- 图生视频（单张首帧）
+- 参考图生视频（`reference_images`，最多 5 张；与首帧图互斥）
 - 视频扩展（`/v1/videos/extensions`）
 - 多 API Key 管理
 - 浏览器 `localStorage` 永久保存 Key（刷新不丢）
