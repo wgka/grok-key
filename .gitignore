@@ -29,3 +29,7 @@ Thumbs.db
 .cursor/
 .codex/
 .playwright-mcp/
+
+# Deploy runtime
+deploy.log
+.deploy.pid
